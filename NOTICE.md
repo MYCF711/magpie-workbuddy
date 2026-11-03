@@ -21,10 +21,10 @@
 - 许可：MIT
 - 版权：Copyright (c) 2026 dsh-codearts-auth contributors
 - 吸收内容：
-  - `vendor/lib/buddy.js` / `buddy-oauth.js`：WorkBuddy 认证端点、产品头、客户端指纹与轮询登录结论。
+  - `vendor/lib/buddy.js` / `buddy-oauth.js`：WorkBuddy 认证端点、产品头、登录超时与 scoped/config 双目录并集结论。
   - `vendor/lib/buddy-compensation.js`：限时补偿状态 / 领取端点与「成功响应没有 data」判据。
-  - `vendor/lib/buddy-balance-*` / `buddy-growth.js`：额度与任务生态的协议参考。
-  - 独立改写为 magpie 钩子；没有复制其 Cordis / DSH 服务框架，也没有接入自动盲盒 / 抽奖。
+  - `vendor/lib/buddy-growth.js`：签到 / 成长任务端点参考（未接入盲盒、抽奖、旅行等一次性任务）。
+  - 独立改写为 magpie 钩子；没有复制其 Cordis / DSH 服务框架，没有采用其 `CodeBuddyIDE/4.12.2` 客户端指纹，也没有接入其余额选号逻辑。
 
 ## MYCF711 自有 MIT 插件 / 脚手架
 

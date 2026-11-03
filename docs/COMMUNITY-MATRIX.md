@@ -42,7 +42,7 @@
 | 3 | 双区图标 | 无独立图标 | 每个 provider 独立内嵌 SVG | mount 测试断言不同且为 `data:image/` |
 | 4 | 双区架构隔离 | 单文件闭包 | 显式 `SITES` 适配器 + 共享 core；无 host 分支 | `tests/multi-provider.test.mjs` 静态断言 |
 | 5 | 目录双端点 | config 即权威 | scoped 为模型元数据主目录，config 补齐 id 并叠加促销；同 id 不再丢 scoped 的倍率 | scoped 合并测试断言 scoped 的 `rate=0.1`、config-only 的 `a` 保留 |
-| 6 | 测试总面 | 318 条 | 318 条兼容回归 + 171 条 Node 契约 / 单元测试 | `npm test` 与 `npm run test:community` |
+| 6 | 测试总面 | 318 条 | 318 条兼容回归 + 173 条 Node 契约 / 单元测试 | `npm test` 与 `npm run test:community` |
 | 7 | 注册信息完整性 | 单包双 provider | `registry-entry.json.providers` 同时登记两个 id，可直接进市场 | `scripts/check.mjs` registry 校验 |
 
 ## 3. 未接入，且有意不接

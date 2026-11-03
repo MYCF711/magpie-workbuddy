@@ -128,7 +128,20 @@ test("scopedModelsOf 兼容 config、console 数组与嵌套 model，并拒绝�
   assert.deepEqual(_internal.scopedModelsOf({ unexpected: true }), [])
 })
 
-test("scoped 开关关闭时只读 config；空 cli 时才自动回退", async () => {
+test("增强目录的过滤规则：别名、补全、生成图、过小输出都不入聊天列表", () => {
+  const ok = { id: "glm-5.3", maxOutputTokens: 32_000 }
+  assert.equal(_internal.isChatLike(ok), true)
+  assert.equal(_internal.isChatLike({ id: "auto" }), false)
+  assert.equal(_internal.isChatLike({ id: "default" }), false)
+  assert.equal(_internal.isChatLike({ id: "nes-fim" }), false)
+  assert.equal(_internal.isChatLike({ id: "completion-x" }), false)
+  assert.equal(_internal.isChatLike({ id: "codewise-rewrite" }), false)
+  assert.equal(_internal.isChatLike({ id: "tiny", maxOutputTokens: 256 }), false)
+  assert.equal(_internal.isChatLike({ id: "img", tags: ["text-to-image"] }), false)
+  assert.equal(_internal.isChatLike({ id: "extra", supportsExtra: true }), false)
+})
+
+test("scoped 开关关闭时只列 cli 模型，不并 craft/图片等非对话行", async () => {
   const original = globalThis.fetch
   const calls = []
   globalThis.fetch = async (url) => {
@@ -137,8 +150,15 @@ test("scoped 开关关闭时只读 config；空 cli 时才自动回退", async (
       return Response.json({
         code: 0,
         data: {
-          agents: [{ name: "cli", models: ["a"] }],
-          models: [{ id: "a", name: "A", credits: "0" }],
+          agents: [
+            { name: "cli", models: ["a"] },
+            { name: "craft", models: ["x", "img"] },
+          ],
+          models: [
+            { id: "a", name: "A", credits: "0" },
+            { id: "x", name: "Craft only", credits: "1" },
+            { id: "img", name: "Image only", credits: "1" },
+          ],
         },
       })
     }

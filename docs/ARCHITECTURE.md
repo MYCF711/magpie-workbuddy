@@ -33,7 +33,7 @@ index.mjs
 | 错误 | `WBError`、11140 / 14018 / 11153 / 11159 分类 | 上游错误码相同 |
 | 测试 | 目录、流式、额度、刷新、工具、消息的回归 | 对两边同时成立 |
 
-共享模块只接收 `site` 参数，**没有模块级可变单例保存账号**。每个 `makePlugin(site)` 调用内创建的 Set / Map 只属于一次插件实例；账号相关缓存键都包含凭据身份。
+共享模块只接收 `site` 参数；账号相关缓存都是模块级表，但键包含 `site.id` 与凭据身份，不会跨区、跨账号串用。每个 `makePlugin(site)` 调用内创建的会话补救 Set / Map 只属于一次插件实例。
 
 ## 3. 不能共享的
 
@@ -57,7 +57,7 @@ index.mjs
 - 刷新锁的 key 包含 provider 与 refresh token；两区、两个账号不会共用一次刷新。
 - 模型缓存键包含 `uid + enterpriseId + API key`；同一账号的国服与国际服缓存分开。
 - system prompt / tool-result / signature 的会话级补救集合存在于 `makePlugin` 闭包内，不再跨站点共享。
-- 额度账本只读 magpie 自己的 `quotas.json`，按 provider 名与账号过滤，不写它。
+- 额度账本只读 magpie 自己的 `usage.jsonl`，按 provider 名与账号过滤，不写它。
 
 ## 5. 单包双 Provider 的验收
 

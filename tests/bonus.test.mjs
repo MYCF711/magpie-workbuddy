@@ -163,6 +163,28 @@ test("打开开关后，签到成功再领取一次补偿，并写进结果", as
   }
 })
 
+test("补偿已领取或活动结束时不再调用领取接口", async () => {
+  for (const [status, words] of [
+    [{ active: true, claimed: true, credit_num: 500 }, /限时补偿已领取/],
+    [{ active: false, claimed: false, credit_num: 500 }, /未开始或已结束/],
+  ]) {
+    const seen = []
+    const restore = fakeWorkBuddy({ seen, claimStatus: status })
+    try {
+      const plugin = await WorkBuddyAuthPlugin({
+        client: {},
+        magpie: { option: (_id, key) => key === _internal.AUTO_COMPENSATION },
+      })
+      const auth = { type: "oauth", access: "at", refresh: "r", expires: Date.now() + 3_600_000, uid: "u", domain: "" }
+      const out = await plugin.auth.checkin(async () => auth)
+      assert.match(out.message, words)
+      assert.equal(seen.includes(COMPENSATION_CLAIM_PATH), false)
+    } finally {
+      restore()
+    }
+  }
+})
+
 test("补偿领取失败不把签到改成失败", async () => {
   const restore = fakeWorkBuddy({ claim: { code: 14018, msg: "credits exhausted" } })
   try {

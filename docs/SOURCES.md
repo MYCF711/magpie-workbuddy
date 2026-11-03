@@ -32,13 +32,12 @@
 
 | 来源文件 | 用途 |
 |---|---|
-| `vendor/lib/buddy.js` | 认证路径、产品头、UA、登录超时、配置解析 |
-| `vendor/lib/buddy-oauth.js` | external-link-v2 轮询登录、refresh |
+| `vendor/lib/buddy.js` | 认证路径、产品头、登录超时、配置解析 |
+| `vendor/lib/buddy-oauth.js` | external-link-v2 轮询登录、refresh、scoped/config 双目录并集结论 |
 | `vendor/lib/buddy-compensation.js` | `/billing/meter/compensation-status` 与 `/billing/meter/claim-compensation` 的端点、成功判据、活动字段 |
-| `vendor/lib/buddy-balance-*` | 余额排序 / 选择思路 |
 | `vendor/lib/buddy-growth.js` | 签到 / 任务生态参考（本插件只接安全的每日签到；一次性奖励默认不自动执行） |
 
-Jet Hub 是 DSH / Cordis 侧插件，依赖其服务与凭据层；本项目没有复制其服务框架，只取 WorkBuddy 上游协议结论，并放进 magpie 的九钩模型。
+Jet Hub 是 DSH / Cordis 侧插件，依赖其服务与凭据层；本项目没有复制其服务框架，也没有接入其余额选号、盲盒、抽奖或成长任务。客户端请求头沿用社区 WorkBuddy 的 `WorkBuddy/<app> <appName>/<app> CLI/<cli>` 指纹，Jet Hub 的 `CodeBuddyIDE/4.12.2` 未被采用。
 
 ## 3. MYCF711/magpie-plugin-scaffold
 

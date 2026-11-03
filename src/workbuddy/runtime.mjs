@@ -189,6 +189,11 @@ function renew(site, a, save) {
       if (!got?.accessToken) throw Object.assign(new Error("WorkBuddy gave no refreshed token"), { bare: true })
       const next = merge(a, got)
       renewed.set(key, { next, at: Date.now() })
+      // The replay table is a cache, not a history: drop expired entries
+      // and keep a hard bound so a long-lived host cannot grow one row per
+      // rotated refresh token forever.
+      for (const [k, v] of renewed) if (Date.now() - v.at >= KEEP_RENEWED_MS) renewed.delete(k)
+      if (renewed.size > 256) renewed.delete(renewed.keys().next().value)
       await save?.(next)
       return next
     })().finally(() => renewing.delete(key))
@@ -3341,6 +3346,20 @@ function scopedModelsOf(page) {
   }).filter(Boolean)
 }
 
+// isChatLike is Jet Hub's filter for rows that must never reach a chat
+// model picker: auto/default aliases, NES/completion helpers, tiny-output
+// models, and text-to-image generators. Only the extended catalogue uses
+// it; the default path stays byte-compatible with the community cli list.
+function isChatLike(d) {
+  const id = String(d?.id ?? "")
+  if (id === "auto" || id === "default") return false
+  if (/^(nes-|completion-|codewise-)/.test(id)) return false
+  if (d?.supportsExtra === true) return false
+  if (Number(d?.maxOutputTokens) > 0 && Number(d.maxOutputTokens) <= 256) return false
+  if (Array.isArray(d?.tags) && d.tags.includes("text-to-image")) return false
+  return true
+}
+
 // liveModels reads /v3/config, and with the wider catalogue on also the
 // site's scoped console catalogue. Scoped is newer and can name models the
 // config's cli agent misses; config stays authoritative for prices and
@@ -3385,23 +3404,30 @@ async function liveModels(site, a, { scoped = false } = {}) {
       })
     }
   }
-  // ids: scoped primary order first (its console shape has no agents, so
-  // its declared models are read directly), then config's cli list and any
-  // remaining ids. The union is the point of reading both endpoints; a
-  // bare cli list would drop the newer scoped-only models.
+  // ids: with the extended catalogue on, scoped's usable rows first, then
+  // config's agent-referenced and remaining usable rows — Jet Hub's union,
+  // with non-chat rows filtered. With it off, config's cli list is the only
+  // list: the community-compatible surface must never widen just because
+  // config carries craft-only / image / internal rows.
   const ids = []
   const add = (id) => {
     if (typeof id !== "string" || !id || ids.includes(id)) return
     ids.push(id)
   }
-  for (const page of [wide, base].filter(Boolean)) {
-    for (const agent of page.agents ?? []) {
+  if (wide) {
+    for (const page of [wide, base].filter(Boolean)) {
+      for (const agent of page.agents ?? []) {
+        if (agent.name !== "cli" && agent.name !== "craft") continue
+        for (const id of agent.models ?? []) add(id)
+      }
+      for (const d of scopedModelsOf(page)) if (isChatLike(d)) add(d.id)
+    }
+  } else {
+    for (const agent of base?.agents ?? []) {
       if (agent.name !== "cli") continue
       for (const id of agent.models ?? []) add(id)
     }
-    if (page === wide) for (const d of scopedModelsOf(page)) add(d.id)
   }
-  for (const id of details.keys()) add(id)
   const promotions = pages.map((p) => p.modelPromotions).find(Array.isArray) ?? []
   const out = []
   for (const id of ids) {
@@ -4164,4 +4190,4 @@ async function explained(res) {
 export { SITES, makePlugin }
 
 // for tests
-export const _internal = { makePlugin, scopedModelsOf, AUTO_COMPENSATION, EXTENDED_CATALOG, compensationHeaders, fetchCompensation, claimCompensation, compensationOf, planCodes, listedExtra, idFor, OFF_TAKEN, replyAfterToolsOn, withDefaultEffort, SMALL_BUDGET, defaultEffortOf, gzipped, FREE_ONLY, PRICE_TTL, keyAccount, remoteConfig, cycleOf, typeUnions, systemAsUser, systemKey, DEFAULT_SYSTEM, EDGE_READS, fitShape, replyAfterTools, AFTER_TOOLS_REFUSED, enterpriseUsageOf, accountName, notDesktop, textOnly, runsOutOf, packagesOf, endOf, enterpriseHeaders, enterpriseOf, liveModels, browserSignIn, withSystem, asReasoning, normalizeToolChoice, fitTools, fitted, renamed, unsaid, FILTER_SAYS, unflagged, usageOf, desktopHeld, explained, REFUSED_HINT, RESTRICTED_HINT, EXHAUSTED_HINT, REFUSED_DOC, commaPaused, commaPausedOn, opened, freeCredits, creditsOf, priceOf, fresh, SITES, renewing, renewed, SESSION, attend, scopeOf, turnKey, conversationKey, signatureOf, isMessages, withoutUnsigned, withoutSignedThinking, prepared, answeredBefore, nativeOf, modelOf, configModels, freeWindowOf, tokensShort, freeWindowRows, freeWindowLedger, readLedgerTail, pinned, pinning, rowTime, rowAccount, ofAccount, windowOffset, windowReset, CN_ESTIMATED_WINDOWS, FREE_WINDOW_AI, FREE_WINDOW_SPAN, FREE_WINDOW_GAP, FREE_WINDOW_LEAD, checkinOf, API_MESSAGES: NPM_MESSAGES, API_CHAT: NPM }
+export const _internal = { makePlugin, scopedModelsOf, isChatLike, AUTO_COMPENSATION, EXTENDED_CATALOG, compensationHeaders, fetchCompensation, claimCompensation, compensationOf, planCodes, listedExtra, idFor, OFF_TAKEN, replyAfterToolsOn, withDefaultEffort, SMALL_BUDGET, defaultEffortOf, gzipped, FREE_ONLY, PRICE_TTL, keyAccount, remoteConfig, cycleOf, typeUnions, systemAsUser, systemKey, DEFAULT_SYSTEM, EDGE_READS, fitShape, replyAfterTools, AFTER_TOOLS_REFUSED, enterpriseUsageOf, accountName, notDesktop, textOnly, runsOutOf, packagesOf, endOf, enterpriseHeaders, enterpriseOf, liveModels, browserSignIn, withSystem, asReasoning, normalizeToolChoice, fitTools, fitted, renamed, unsaid, FILTER_SAYS, unflagged, usageOf, desktopHeld, explained, REFUSED_HINT, RESTRICTED_HINT, EXHAUSTED_HINT, REFUSED_DOC, commaPaused, commaPausedOn, opened, freeCredits, creditsOf, priceOf, fresh, SITES, renewing, renewed, SESSION, attend, scopeOf, turnKey, conversationKey, signatureOf, isMessages, withoutUnsigned, withoutSignedThinking, prepared, answeredBefore, nativeOf, modelOf, configModels, freeWindowOf, tokensShort, freeWindowRows, freeWindowLedger, readLedgerTail, pinned, pinning, rowTime, rowAccount, ofAccount, windowOffset, windowReset, CN_ESTIMATED_WINDOWS, FREE_WINDOW_AI, FREE_WINDOW_SPAN, FREE_WINDOW_GAP, FREE_WINDOW_LEAD, checkinOf, API_MESSAGES: NPM_MESSAGES, API_CHAT: NPM }

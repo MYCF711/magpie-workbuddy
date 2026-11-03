@@ -37,10 +37,12 @@ export function headersFor(auth = {}) {
   const h = {
     "content-type": "application/json",
     accept: "application/json",
-    "user-agent": "magpie-plugin/0.0.0", // TODO: 换成真实 UA，有的厂商硬校验它
+    // 通用 helper 的默认 UA；本插件的真实请求头在
+    // src/workbuddy/runtime.mjs 的 sign() / chatHeaders() 中设置。
+    "user-agent": "magpie-workbuddy/0.1.0",
   }
   if (auth.token) h.authorization = `Bearer ${auth.token}`
-  // TODO: 需要组织码 / 租户头的话在这里加
+  // 租户头由调用方按厂商追加；WorkBuddy 的企业头见 enterpriseHeaders()。
   // if (auth.org) h["organization-code"] = auth.org
   return h
 }
@@ -68,7 +70,8 @@ export async function read(res, url = "") {
       url,
     })
   }
-  // TODO: 有的厂商 200 里还有业务码（`code: 1000` 表示成功）。不是成功值就抛。
+  // 某些上游会在 200 里再套业务码；本插件在 runtime 中按 WorkBuddy 的
+  // code 语义处理，通用 helper 不猜成功值。
   // if (typeof body?.code === "number" && body.code !== 1000) {
   //   throw new ApiError(body.message || `code ${body.code}`, { status: res.status, code: String(body.code), url })
   // }

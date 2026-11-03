@@ -7,7 +7,7 @@
 31 条静态模型  登录后跟随账号的 /v3/config 实时上下架
 2 种协议      Claude 走 Anthropic Messages，其余走 OpenAI Chat Completions
 3 个开关      仅免费模型 · 增强模型目录 · 签到后自动领取限时补偿
-318 + 171     社区兼容回归 + 本仓库单元 / 契约测试
+318 + 173     社区兼容回归 + 本仓库单元 / 契约测试
 ```
 
 > 非官方社区插件。WorkBuddy 的接口与客户端指纹可能变化；本仓库不代理、不缓存对话内容，请求直接发往对应站点。
@@ -109,7 +109,7 @@ npm pack --dry-run       # 检查发布内容
 
 ## 与社区插件的关系
 
-本项目的 WorkBuddy 协议核心来自 [`magpie-community/plugins · packages/workbuddy`](https://github.com/magpie-community/plugins/tree/main/packages/workbuddy)（MIT），并原样保留其 318 条回归测试作为兼容基线。Jet Hub 的 WorkBuddy 实现用于补充双目录、补偿与客户端指纹等能力。完整功能对照、超越项和未接入项见 [docs/COMMUNITY-MATRIX.md](./docs/COMMUNITY-MATRIX.md)。
+本项目的 WorkBuddy 协议核心来自 [`magpie-community/plugins · packages/workbuddy`](https://github.com/magpie-community/plugins/tree/main/packages/workbuddy)（MIT），并原样保留其 318 条回归测试作为兼容基线。Jet Hub 的 WorkBuddy 实现用于补充 scoped 双目录、限时补偿与认证超时等结论；客户端请求头仍采用社区 WorkBuddy 的指纹。完整功能对照、超越项和未接入项见 [docs/COMMUNITY-MATRIX.md](./docs/COMMUNITY-MATRIX.md)。
 
 共享与独立边界见 [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)，协议来源与版本见 [docs/SOURCES.md](./docs/SOURCES.md)。
 
