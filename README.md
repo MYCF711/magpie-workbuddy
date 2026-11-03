@@ -2,6 +2,8 @@
 
 **一个插件包，两张供应商卡：`workbuddy` 接腾讯 WorkBuddy 国服，`workbuddy-ai` 接 WorkBuddy AI 国际服。登录态、模型目录、额度与签到互不覆盖。**
 
+把国服 `copilot.tencent.com` 与国际服 `www.workbuddy.ai` 放进同一个 magpie 插件包，做成两个独立供应商、两组登录态、两份模型目录。它保留 `magpie-community/plugins` WorkBuddy 0.2.20 的完整行为，并补上 Jet Hub 的 scoped 双目录与国服限时补偿。浏览器登录、桌面登录、API Key、刷新、企业头、Messages/Chat 分流和额度由共享核心处理；域名、产品码、图标、静态模型与签到/补偿能力放在两个站点适配器里，互不覆盖。下面先给安装和功能，再解释共享与独立边界、验证证据和已知限制。
+
 ```
 2 个供应商    浏览器登录 / 桌面登录 / API Key，三选一
 31 条静态模型  登录后跟随账号的 /v3/config 实时上下架
