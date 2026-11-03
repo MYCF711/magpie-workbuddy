@@ -3607,7 +3607,10 @@ function startGrowth(site, a, magpie) {
   // and a background round there would both outlive the test and hit a mock.
   if (!magpie) return
   if (magpie.option?.(site.id, GROWTH_CENTER) === false) return
-  const key = `${site.id}:${a.accountId || a.uid || "account"}`
+  // uid is the identity here: accountId is a display name (a short one like "u"
+  // is a real possibility), and two accounts sharing one state file would
+  // resume each other's daily counts.
+  const key = `${site.id}:${a.uid || a.accountId || "account"}`
   if (growthRunning.has(key)) return
   const job = (async () => {
     const all = readGrowthState(site)
