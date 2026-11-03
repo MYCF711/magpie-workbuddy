@@ -26,6 +26,17 @@
   - `vendor/lib/buddy-growth.js`：签到 / 成长任务端点参考（未接入盲盒、抽奖、旅行等一次性任务）。
   - 独立改写为 magpie 钩子；没有复制其 Cordis / DSH 服务框架，没有采用其 `CodeBuddyIDE/4.12.2` 客户端指纹，也没有接入其余额选号逻辑。
 
+## Ghandi/workbuddy-pro
+
+- 仓库：https://gitee.com/Ghandi/workbuddy-pro
+- 许可：MIT
+- 版权：Copyright (c) 2026
+- 吸收内容：
+  - `lib/events.mjs`：成长中心的三套客户端指纹（desktop / web / 微信小程序）与事件形状，以及任务判据表（`specs`）与手动任务说明（`manualTasks`）。
+  - `lib/engine.mjs`：一轮执行的实测节奏与保底规则 —— 小程序族 45 秒 + 0~10 秒抖动（连发会被上游回滚）、上报后回读进度才领、`已领取 / 限领一次` 不重试、补签按目标日期去重、领奖扫尾覆盖未适配的新任务码。
+  - 改写为 `src/workbuddy/events.mjs` 与 `src/workbuddy/growth.mjs`：去掉其看板、独立服务与定时器，只保留「跑一轮」的逻辑，接进 magpie 的 `auth.checkin`。
+  - 没有复制其 provider 层（本仓库的 provider 来自 magpie-community/plugins），也没有复制其账号存储、页面与 settings。
+
 ## WorkBuddy official app icon
 
 - 来源：WorkBuddy 官方 Windows 客户端安装包 `https://download.codebuddy.cn/workbuddy/saas/win32-x64-user/WorkBuddy-win32-x64-user-5.9.3.42398134-d4692421.exe`（2026-11-03 读取），`.rsrc` 里 RT_ICON 组的 256×256 一档，sha256 `f101c1e777dac49e31359f97130d1d34267c175f0e6dda0ee89c057926785758`。

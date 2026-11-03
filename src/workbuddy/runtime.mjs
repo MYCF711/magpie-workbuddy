@@ -10,13 +10,14 @@
 // those of its current desktop app (see SITES' app, cli and appName).
 
 import { createHash, randomBytes } from "node:crypto"
-import { closeSync, openSync, readFileSync, readSync, statSync } from "node:fs"
+import { closeSync, mkdirSync, openSync, readFileSync, readSync, statSync, writeFileSync } from "node:fs"
 import { homedir } from "node:os"
-import { isAbsolute, join } from "node:path"
+import { dirname, isAbsolute, join } from "node:path"
 import { gzipSync } from "node:zlib"
 
 import { SITES } from "../sites.mjs"
 import { fetchCompensation, claimCompensation, compensationOf, describeCompensationFailure } from "./bonus.mjs"
+import { GrowthError, createGrowth } from "./growth.mjs"
 
 const APP_VERSION = "2.0.0" // the version WorkBuddy's sign-in page is opened with
 const POLL_MS = 1000
@@ -3469,6 +3470,169 @@ async function liveModels(site, a, { scoped = false } = {}) {
   return out
 }
 
+// ---- the growth centre --------------------------------------------------------
+
+// The growth centre lives on the vendor's **web** origin, not on the chat
+// endpoint: copilot.tencent.com serves chats, www.workbuddy.cn serves the growth
+// pages and the meters. Asking the chat host answers 404, which reads like "this
+// account has no activities" and silently earns nothing — the failure mode is
+// invisible, so the host is spelled out here instead of derived from site.endpoint.
+const GROWTH_ORIGIN = { cn: "https://www.workbuddy.cn", ai: "https://www.workbuddy.ai" }
+// The meter endpoints (check-in, gift, compensation) are served by codebuddy.cn
+// on the China build; a build that only knows workbuddy.cn answers 404 there,
+// and growth.mjs falls back once.
+const BILLING_ORIGIN = "https://www.codebuddy.cn"
+// The edge's refusals: it never acted on the request, so the same call is safe
+// to send again. Kept as a set so the retry test stays one expression.
+const EDGE_RETRIES = new Set([502, 503, 504])
+// GROWTH_CENTER is the switch. It defaults on: the whole point of wiring this
+// into the check-in hook is that nobody has to remember to click anything, and
+// every action is idempotent per Beijing day. Turning it off is the escape hatch
+// for an account whose activity someone wants to keep manual.
+const GROWTH_CENTER = "growth_center"
+
+function growthOriginOf(site) {
+  return site.ai ? GROWTH_ORIGIN.ai : GROWTH_ORIGIN.cn
+}
+
+// growthHeadersOf is the web client's own set. The chat headers (X-Agent-Purpose
+// "conversation") mean nothing on these routes, and X-Domain must name the web
+// host or the account is answered as if it were signed out.
+function growthHeadersOf(site, a) {
+  const origin = growthOriginOf(site)
+  return {
+    Authorization: `Bearer ${a.access}`,
+    "X-User-Id": a.uid ?? "",
+    "Content-Type": "application/json",
+    Accept: "application/json, text/plain, */*",
+    Origin: origin,
+    Referer: `${origin}/profile/growth-center`,
+    "X-Domain": a.domain || new URL(origin).host,
+    "X-Product": "SaaS",
+    "X-IDE-Type": "WorkBuddy",
+    "X-IDE-Name": "WorkBuddy",
+    "X-IDE-Version": site.app,
+    "X-Requested-With": "XMLHttpRequest",
+    "X-Agent-Intent": "craft",
+    "X-Agent-Purpose": "conversation",
+    "User-Agent": cliAgent(site),
+    ...(a.enterpriseId
+      ? { "X-Enterprise-Id": a.enterpriseId, "X-Tenant-Id": a.enterpriseId }
+      : { "X-No-Enterprise-Id": "1" }),
+  }
+}
+
+// growthClientOf is the four-method client growth.mjs wants. Retries follow the
+// same rule as the chat path: 429 and the edge's 502/503/504 never acted on the
+// request, so they are safe to send again; a 429 that survives three tries is a
+// rate limit the round must defer on, not a failure to report.
+function growthClientOf(site, a) {
+  const origin = growthOriginOf(site)
+  const billingBase = site.ai ? origin : BILLING_ORIGIN
+  const request = async (path, { body, headers: extra, billing = false } = {}) => {
+    const base = billing ? billingBase : origin
+    let response
+    let payload = null
+    for (let attempt = 0; ; attempt++) {
+      response = await fetch(base + path, {
+        method: body === undefined ? "GET" : "POST",
+        headers: { ...growthHeadersOf(site, a), ...(extra ?? {}) },
+        ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+        signal: AbortSignal.timeout(30_000),
+      })
+      const retriable = response.status === 429 || EDGE_RETRIES.has(response.status)
+      if (!retriable || attempt >= 2) break
+      await new Promise((r) => setTimeout(r, 5_000 * (attempt + 1)))
+    }
+    const text = await response.text()
+    try {
+      payload = JSON.parse(text)
+    } catch {
+      throw new Error(`${path}: HTTP ${response.status}，上游返回的不是 JSON`)
+    }
+    if (!response.ok || (payload?.code !== undefined && payload.code !== 0)) {
+      const error = new GrowthError(path, response.status, payload)
+      if (response.status === 401) error.unauthorized = true
+      if (response.status === 429) error.limited = true
+      throw error
+    }
+    return payload.data
+  }
+  return {
+    origin,
+    headers: (extra) => growthHeadersOf(site, a),
+    request,
+    // A real chat: growth.mjs reads the server's own request id out of the SSE
+    // stream, so this must hand back the raw Response, not a parsed body.
+    fetch: (url, init) => fetch(url, { ...init, signal: AbortSignal.timeout(90_000) }),
+    refresh: async () => false,
+  }
+}
+
+// Growth progress is per account and per Beijing day, so it outlives one
+// check-in call: reports.sent is what keeps a second run from resending units
+// the first already sent (a resend is what the vendor's anti-abuse counts).
+function growthStatePath(site) {
+  return join(homedir(), ".cache", "magpie", `workbuddy-growth-${site.id}.json`)
+}
+
+function readGrowthState(site) {
+  try {
+    return JSON.parse(readFileSync(growthStatePath(site), "utf8")) ?? {}
+  } catch {
+    return {}
+  }
+}
+
+function writeGrowthState(site, all) {
+  try {
+    const file = growthStatePath(site)
+    mkdirSync(dirname(file), { recursive: true })
+    writeFileSync(file, JSON.stringify(all), { mode: 0o600 })
+  } catch {
+    // A state file that cannot be written must not fail the run: the worst case
+    // is that tomorrow's round re-reads a stale `sent` count and re-checks the
+    // progress before doing anything.
+  }
+}
+
+// One growth round per account at a time. The check-in hook is called once a
+// Beijing day, but magpie also calls it again after a failure, and a slow round
+// (the mini-program family paces itself at 45 s a report) can still be running.
+const growthRunning = new Map()
+
+function startGrowth(site, a, magpie) {
+  if (site.ai) return
+  // No magpie means no host: the module is being driven by a test or a script,
+  // and a background round there would both outlive the test and hit a mock.
+  if (!magpie) return
+  if (magpie.option?.(site.id, GROWTH_CENTER) === false) return
+  const key = `${site.id}:${a.accountId || a.uid || "account"}`
+  if (growthRunning.has(key)) return
+  const job = (async () => {
+    const all = readGrowthState(site)
+    const state = all[key] ?? {}
+    const growth = createGrowth({
+      site,
+      account: { id: key, name: a.accountId || "", auth: a },
+      client: growthClientOf(site, a),
+      state,
+      log: (message) => console.error(`[workbuddy-growth] ${key} ${message}`),
+    })
+    try {
+      // check-in is not repeated here: checkinOf already ran it a moment ago,
+      // and a second status read is a second request for the same answer.
+      await growth.run({ actions: ["activity", "tasks", "travel", "bonus"] })
+    } finally {
+      all[key] = state
+      writeGrowthState(site, all)
+    }
+  })()
+    .catch((e) => console.error(`[workbuddy-growth] ${key} 本轮失败：${e.message}`))
+    .finally(() => growthRunning.delete(key))
+  growthRunning.set(key, job)
+}
+
 // ---- the plugins --------------------------------------------------------------
 
 // AFTER_TOOLS_REFUSED is WorkBuddy's 400 code 11153, "the conversation must
@@ -3716,7 +3880,15 @@ function makePlugin(site) {
           // Only a day that was claimed or already held counts as success;
           // an inactive/ineligible/failed check-in must not spend the
           // separate one-shot compensation.
-          const bonus = daily.outcome === "claimed" || daily.outcome === "done" ? await autoCompensation(a) : ""
+          const ok = daily.outcome === "claimed" || daily.outcome === "done"
+          const bonus = ok ? await autoCompensation(a) : ""
+          // The growth centre rides on this hook because magpie calls it once a
+          // Beijing day per account — exactly the rhythm the activities have.
+          // It runs in the background: a full round paces the mini-program
+          // family at 45 s a report and can take minutes, far longer than a
+          // check-in answer should take. Every action inside is idempotent per
+          // day, so a second call the same day costs one list read and stops.
+          if (ok) startGrowth(site, a, magpie)
           return bonus ? { ...daily, message: [daily.message, bonus].filter(Boolean).join("；") } : daily
         },
       }),
@@ -3751,6 +3923,13 @@ function makePlugin(site) {
           labels: { zh: "增强模型目录" },
           descriptions: { zh: `把 ${site.name} 的 scoped 目录合并进 /v3/config，补上桌面配置尚未收录的新模型与分角色元数据。关闭时只用兼容目录；/v3/config 没有 cli 模型时仍会自动读取 scoped。` },
         },
+        ...(site.ai ? [] : [{
+          key: GROWTH_CENTER,
+          label: "Growth centre on check-in",
+          description: `Runs ${site.name}'s growth centre in the background after the daily check-in: claimable tasks, the first Buddy, cat travel, streak make-up cards and redemptions, the lottery, the new-user gift and the activity compensation. Every action is idempotent per Beijing day, so a repeat run only re-reads the list and stops.`,
+          labels: { zh: "签到顺带跑成长中心" },
+          descriptions: { zh: `每日签到成功后在后台跑一遍成长中心：可领的任务、首只 Buddy、猫猫旅行、连登补签与兑换、抽奖、新手礼包、活动补偿。所有动作按北京自然日幂等，重复触发只会重新读一次列表就停。` },
+        }]),
       ],
       async loader(getAuth) {
         const auth = await getAuth()
