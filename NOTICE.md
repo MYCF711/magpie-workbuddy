@@ -1,0 +1,41 @@
+# NOTICE
+
+本项目的部分**协议原语、兼容实现与工程模式**来自以下以 MIT 许可发布的项目。完整 MIT 正文见 `LICENSE`。
+
+## magpie-community/plugins
+
+- 仓库：https://github.com/magpie-community/plugins
+- 许可：MIT
+- 版权：Copyright (c) 2026 magpie-community contributors
+- 吸收内容：
+  - `packages/workbuddy/index.mjs`（0.2.20，commit `add66fc9543d5e18732b0c8ba3a295e754c3bddd`）：
+    WorkBuddy 双 provider 的登录、刷新、会话、模型目录、流式、额度、签到、错误分类实现；
+    该包的 29 个测试文件（318 条）原样作为兼容回归导入 `tests/community/`。
+  - `packages/codearts`：SSE 折叠与 tool_calls 合并思路（`src/openai-sse.mjs`）。
+  - `packages/zen-free`：Chat accumulator、SSE 帧解析与上限（`src/openai-sse.mjs`）。
+  - `packages/raccoon`：OAuth loopback 校验、refresh 单飞与短回放（`src/oauth-pkce.mjs`、`src/refresh-lock.mjs`）。
+
+## Betsy20/magpie-Jet-Hub
+
+- 仓库：https://github.com/Betsy20/magpie-Jet-Hub
+- 许可：MIT
+- 版权：Copyright (c) 2026 dsh-codearts-auth contributors
+- 吸收内容：
+  - `vendor/lib/buddy.js` / `buddy-oauth.js`：WorkBuddy 认证端点、产品头、客户端指纹与轮询登录结论。
+  - `vendor/lib/buddy-compensation.js`：限时补偿状态 / 领取端点与「成功响应没有 data」判据。
+  - `vendor/lib/buddy-balance-*` / `buddy-growth.js`：额度与任务生态的协议参考。
+  - 独立改写为 magpie 钩子；没有复制其 Cordis / DSH 服务框架，也没有接入自动盲盒 / 抽奖。
+
+## MYCF711 自有 MIT 插件 / 脚手架
+
+- `magpie-plugin-scaffold` — https://github.com/MYCF711/magpie-plugin-scaffold
+  - 目录结构、九钩契约、检查 / 打分 / 发布脚本、错误码规范、测试结构。
+- `magpie-magicrew-auth` — https://github.com/MYCF711/magpie-magicrew-auth
+  - `src/model-context.mjs` 的递归索引与 TTL 缓存模式。
+  - 工具 schema 兼容改写思路与边界（`src/tool-schema.mjs`）。
+  - `renewOnce` 按 siteId + account 去重（`src/refresh-lock.mjs`）。
+- `magpie-officeace` — 刷新单飞的键控思路（`src/refresh-lock.mjs`）。
+- `magpie-trustoken-auth` — PKCE S256 / loopback 回调（`src/oauth-pkce.mjs`）。
+- `magpie-loomy-auth` — 挂载测试结构（`tests/mount.test.mjs`）。
+
+以上项目的版权归各自作者所有，按 MIT 许可使用。本项目自身同样以 MIT 许可发布。

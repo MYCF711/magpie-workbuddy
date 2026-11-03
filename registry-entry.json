@@ -1,0 +1,12 @@
+{
+  "package": "magpie-workbuddy",
+  "name": "WorkBuddy 双区",
+  "providers": [
+    "workbuddy",
+    "workbuddy-ai"
+  ],
+  "summary": {
+    "en": "WorkBuddy China and WorkBuddy AI international in one plugin: browser/desktop/API-key sign-in, live model catalogue, streaming reasoning and tools, quotas, daily check-in and limited compensation.",
+    "zh": "一个插件接入 WorkBuddy 国服与国际服：浏览器/桌面/API Key 登录、动态模型目录、流式推理与工具调用、额度、每日签到和限时补偿。"
+  }
+}
