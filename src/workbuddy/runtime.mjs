@@ -3418,7 +3418,9 @@ async function liveModels(site, a, { scoped = false } = {}) {
     for (const page of [wide, base].filter(Boolean)) {
       for (const agent of page.agents ?? []) {
         if (agent.name !== "cli" && agent.name !== "craft") continue
-        for (const id of agent.models ?? []) add(id)
+        for (const id of agent.models ?? []) {
+          if (isChatLike(details.get(id) ?? { id })) add(id)
+        }
       }
       for (const d of scopedModelsOf(page)) if (isChatLike(d)) add(d.id)
     }

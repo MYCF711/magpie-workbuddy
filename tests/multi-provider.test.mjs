@@ -78,10 +78,16 @@ test("增强目录以 scoped 为主目录、config 补集并供促销", async ()
       return Response.json({
         code: 0,
         data: {
-          agents: [{ name: "cli", models: ["a", "shared"] }],
+          agents: [
+            { name: "cli", models: ["a", "shared"] },
+            // craft references an image row: it must not slip into the
+            // extended (opt-in) chat list merely by being referenced.
+            { name: "craft", models: ["img-only"] },
+          ],
           models: [
             { id: "a", name: "A", maxInputTokens: 1000, credits: "2" },
             { id: "shared", name: "Shared old", maxInputTokens: 2000, credits: "1.5" },
+            { id: "img-only", name: "Image", tags: ["text-to-image"] },
           ],
           modelPromotions: [],
         },
@@ -107,6 +113,7 @@ test("增强目录以 scoped 为主目录、config 补集并供促销", async ()
     )
     // Scoped is primary: its order first, then config-only ids.
     assert.deepEqual(list.map((m) => m.id), ["shared", "b", "a"])
+    assert.equal(list.some((m) => m.id === "img-only"), false, "craft 引用的图片模型也要过滤")
     const shared = list.find((m) => m.id === "shared")
     assert.equal(shared.name, "Shared new")
     assert.equal(shared.context, 3000)

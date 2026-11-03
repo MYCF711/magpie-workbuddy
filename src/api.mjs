@@ -39,7 +39,7 @@ export function headersFor(auth = {}) {
     accept: "application/json",
     // 通用 helper 的默认 UA；本插件的真实请求头在
     // src/workbuddy/runtime.mjs 的 sign() / chatHeaders() 中设置。
-    "user-agent": "magpie-workbuddy/0.1.0",
+    "user-agent": "magpie-workbuddy/0.1.1",
   }
   if (auth.token) h.authorization = `Bearer ${auth.token}`
   // 租户头由调用方按厂商追加；WorkBuddy 的企业头见 enterpriseHeaders()。
