@@ -46,15 +46,17 @@
 
 ## 安装
 
-> 当前交付是本地源码。发布到 GitHub / npm 后可用下面的命令；未发布前请直接在本目录运行验证，不要把它说成已发布。
+已发布到 GitHub 与 npm：
 
 ```bash
-# 发布后：从 GitHub 安装（git 源）
+# 从 GitHub 安装（git 源）
 magpie plugin add github:MYCF711/magpie-workbuddy
 
-# 发布后：从 npm 安装
+# 从 npm 安装
 magpie plugin add magpie-workbuddy
 ```
+
+仓库：<https://github.com/MYCF711/magpie-workbuddy> · npm：<https://www.npmjs.com/package/magpie-workbuddy>
 
 安装后打开 **设置 → 供应商**，会看到两张独立的卡：
 
