@@ -4,6 +4,8 @@
 // 静态模型快照、协议开关与图标。共享协议实现一律在 workbuddy/ 中，
 // 不得在这里复制请求逻辑，也不得在共享逻辑里按 host 写分支。
 
+import { WORKBUDDY_ICON } from "./workbuddy-icon.mjs"
+
 const CN_MODELS = [
   ["auto", "Auto", 168000],
   ["hy4-preview-f", "Hy4 preview", 1000000, ["high"]],
@@ -41,12 +43,9 @@ const AI_MODELS = [
   ["minimax-m3", "MiniMax-M3", 512000],
 ]
 
-function icon(background, foreground, label) {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"><rect width="128" height="128" rx="28" fill="${background}"/><path d="M29 36h70v10H29zm0 20h70v10H29zm0 20h44v10H29z" fill="${foreground}" opacity=".28"/><text x="64" y="83" text-anchor="middle" font-family="system-ui,sans-serif" font-size="42" font-weight="750" fill="${foreground}">${label}</text></svg>`
-  return `data:image/svg+xml,${encodeURIComponent(svg)}`
-}
-
-export const PLUGIN_ICON = icon("#17233d", "#8fd3ff", "W")
+// Both providers are the same WorkBuddy product; use the official green
+// WorkBuddy logo rather than an invented letter mark.
+export const PLUGIN_ICON = WORKBUDDY_ICON
 
 export const SITES = Object.freeze({
   workbuddy: Object.freeze({
@@ -73,7 +72,7 @@ export const SITES = Object.freeze({
     // not always carry. Public console route (the same one the website uses).
     scopedPath: "/console/enterprises/personal/models",
     compensation: true,
-    icon: icon("#0c4a6e", "#e0f2fe", "WB"),
+    icon: WORKBUDDY_ICON,
   }),
   "workbuddy-ai": Object.freeze({
     id: "workbuddy-ai",
@@ -96,6 +95,6 @@ export const SITES = Object.freeze({
     checkin: false,
     scopedPath: "/console/enterprises/personal/models",
     compensation: false,
-    icon: icon("#4c1d95", "#f3e8ff", "WA"),
+    icon: WORKBUDDY_ICON,
   }),
 })

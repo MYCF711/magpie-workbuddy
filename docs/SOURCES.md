@@ -50,6 +50,7 @@ Jet Hub 是 DSH / Cordis 侧插件，依赖其服务与凭据层；本项目没�
 - magpie 插件文档：<https://usemagpie.ai/docs/zh/plugins>
 - WorkBuddy 登录页与桌面客户端协议：通过 WorkBuddy / CodeBuddy 客户端与站点公开接口观测；具体端点见 `src/workbuddy/runtime.mjs` 常量与注释。
 - WorkBuddy API 前缀：国服 `https://copilot.tencent.com/v2`，国际服 `https://www.workbuddy.ai/v2`。
+- WorkBuddy 官方图标：`https://download.codebuddy.ai/web/workbuddy/170b416d2eccaaf590ea40cd918d5a6b4f07178f/assets/logo.svg`；内嵌为 `src/workbuddy-icon.mjs`，商标归腾讯所有。
 
 ## 5. 版本基线
 

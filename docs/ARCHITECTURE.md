@@ -42,7 +42,7 @@ index.mjs
 | API host | `copilot.tencent.com` | `www.workbuddy.ai` | `SITES` |
 | 登录平台 / 产品码 | `workbuddy` | `workbuddy-ai` | `SITES` |
 | UI 显示名 | 腾讯 WorkBuddy | 国际版 WorkBuddy AI | `displayName` |
-| 图标 | 蓝色 WB | 紫色 WA | `icon` |
+| 图标 | WorkBuddy 官方绿色 Logo | 同一官方 Logo（品牌相同） | `icon` |
 | Messages 路由 | Claude 系可用 | 无该路由 | `messages` |
 | 图片黑名单 | 无 | `glm-*` 不收图 | `noImages` |
 | 每日签到 | 有 | 无 | `checkin` |
@@ -65,7 +65,7 @@ index.mjs
 2. 两个 `plugin.auth` 是不同对象，`provider` 与 `provider.id` 各自匹配。
 3. `config()` 分别只写自己的 `cfg.provider[id]`。
 4. 未登录 `config.models` 非空。
-5. 两个图标不同且都是 `data:image/...`。
+5. 两个 provider 都使用 WorkBuddy 官方 Logo（`data:image/svg+xml;base64,...`），不再使用自制占位图标。
 6. `chat.headers` 只标记自己的 provider。
 7. `registry-entry.json.providers` 同时列出两个 id。
 

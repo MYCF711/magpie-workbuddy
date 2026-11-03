@@ -26,6 +26,12 @@
   - `vendor/lib/buddy-growth.js`：签到 / 成长任务端点参考（未接入盲盒、抽奖、旅行等一次性任务）。
   - 独立改写为 magpie 钩子；没有复制其 Cordis / DSH 服务框架，没有采用其 `CodeBuddyIDE/4.12.2` 客户端指纹，也没有接入其余额选号逻辑。
 
+## WorkBuddy official logo
+
+- 来源：WorkBuddy 官方登录页 `https://download.codebuddy.ai/web/workbuddy/170b416d2eccaaf590ea40cd918d5a6b4f07178f/assets/logo.svg`（2026-11-03 读取）。
+- 用途：仅用于在 magpie 中标识 WorkBuddy 服务，内嵌为 SVG data URI，不修改图形。
+- WorkBuddy 名称与 Logo 归腾讯及其关联方所有；本项目不以 MIT 许可再授权该商标素材。
+
 ## MYCF711 自有 MIT 插件 / 脚手架
 
 - `magpie-plugin-scaffold` — https://github.com/MYCF711/magpie-plugin-scaffold

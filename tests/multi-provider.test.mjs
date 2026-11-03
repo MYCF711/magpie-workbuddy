@@ -15,15 +15,15 @@ test("入口只导出两个插件工厂和测试对象", () => {
   assert.deepEqual(entry._internal.providers, ["workbuddy", "workbuddy-ai"])
 })
 
-test("两个插件各自只注册自己的 provider、图标和模型", async () => {
+test("两个插件各自只注册自己的 provider，并共用 WorkBuddy 官方图标", async () => {
   const cn = await entry.WorkBuddyAuthPlugin({ client: {} })
   const ai = await entry.WorkBuddyAIAuthPlugin({ client: {} })
   assert.equal(cn.auth.provider, "workbuddy")
   assert.equal(ai.auth.provider, "workbuddy-ai")
   assert.notEqual(cn.auth, ai.auth)
-  assert.notEqual(cn.auth.icon, ai.auth.icon)
-  assert.match(cn.auth.icon, /^data:image\//)
-  assert.match(ai.auth.icon, /^data:image\//)
+  assert.equal(cn.auth.icon, ai.auth.icon)
+  assert.match(cn.auth.icon, /^data:image\/svg\+xml;base64,/)
+  assert.match(ai.auth.icon, /^data:image\/svg\+xml;base64,/)
 
   const cfg = { provider: {} }
   await cn.config(cfg)

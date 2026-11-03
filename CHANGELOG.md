@@ -3,6 +3,13 @@
 > 每个版本一节，**一条一行**，说用户能感知的变化。
 > 格式与规矩见 [UPDATING.md](./UPDATING.md)。
 
+## 0.1.4 — 2026-11-03
+
+- 插件卡与两个供应商卡改用 WorkBuddy 官方绿色 Logo（来自 WorkBuddy 官方登录页 `assets/logo.svg`），不再使用自制 W 占位图标。
+- 官方 Logo 作为 SVG data URI 内嵌在插件与两个 provider 的 `icon` 字段里，离线也能显示，不依赖运行时抓取外部图片。
+- npm 安装改用官方包 `magpie-workbuddy`；需要跟随 GitHub 主分支更新的用户可改用 `github:MYCF711/magpie-workbuddy` 安装，两种方式共用同一套 provider id 与账号存储。
+- 本版本只改图标与发布说明，协议、登录、账号和额度行为与 0.1.3 相同。
+
 ## 0.1.3 — 2026-11-03
 
 - 说明书开头补充双供应商的设计与边界摘要，交付自评恢复到 65/65。
