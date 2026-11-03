@@ -3929,9 +3929,9 @@ function makePlugin(site) {
         ...(site.ai ? [] : [{
           key: GROWTH_CENTER,
           label: "Growth centre on check-in",
-          description: `Runs ${site.name}'s growth centre in the background after the daily check-in: claimable tasks, the first Buddy, cat travel, streak make-up cards and redemptions, the lottery, the new-user gift and the activity compensation. Every action is idempotent per Beijing day, so a repeat run only re-reads the list and stops.`,
+          description: `Runs ${site.name}'s growth centre in the background after the daily check-in: claimable tasks, the first Buddy, cat travel, streak make-up cards and redemptions, the lottery, the new-user gift and the activity compensation. Every action is idempotent per Beijing day, so a repeat run only re-reads the list and stops. It runs unless this switch is turned off — never set is treated as on.`,
           labels: { zh: "签到顺带跑成长中心" },
-          descriptions: { zh: `每日签到成功后在后台跑一遍成长中心：可领的任务、首只 Buddy、猫猫旅行、连登补签与兑换、抽奖、新手礼包、活动补偿。所有动作按北京自然日幂等，重复触发只会重新读一次列表就停。` },
+          descriptions: { zh: `每日签到成功后在后台跑一遍成长中心：可领的任务、首只 Buddy、猫猫旅行、连登补签与兑换、抽奖、新手礼包、活动补偿。所有动作按北京自然日幂等，重复触发只会重新读一次列表就停。没设置过时按开启处理，关掉之后只签到。` },
         }]),
       ],
       async loader(getAuth) {

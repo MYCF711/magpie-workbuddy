@@ -1,6 +1,6 @@
 {
   "name": "magpie-workbuddy",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "WorkBuddy 国服 / 国际服双供应商 magpie 插件：浏览器、桌面与 API Key 登录，动态模型目录，流式推理与工具调用，额度、签到、限时补偿。",
   "type": "module",
   "main": "./index.mjs",
