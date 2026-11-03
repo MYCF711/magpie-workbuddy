@@ -43,8 +43,11 @@ const AI_MODELS = [
   ["minimax-m3", "MiniMax-M3", 512000],
 ]
 
-// Both providers are the same WorkBuddy product; use the official green
-// WorkBuddy logo rather than an invented letter mark.
+// Both providers are the same WorkBuddy product, so they share the official
+// app icon (the rounded-square mark from WorkBuddy's own Windows installer)
+// rather than an invented letter mark. magpie draws icons inside a rounded
+// square tile, and the site favicon is a circle, which leaves that tile's
+// corners empty -- see src/workbuddy-icon.mjs for the source and why.
 export const PLUGIN_ICON = WORKBUDDY_ICON
 
 export const SITES = Object.freeze({

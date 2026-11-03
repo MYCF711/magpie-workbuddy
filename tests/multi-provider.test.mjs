@@ -22,8 +22,9 @@ test("两个插件各自只注册自己的 provider，并共用 WorkBuddy 官方
   assert.equal(ai.auth.provider, "workbuddy-ai")
   assert.notEqual(cn.auth, ai.auth)
   assert.equal(cn.auth.icon, ai.auth.icon)
-  assert.match(cn.auth.icon, /^data:image\/svg\+xml;base64,/)
-  assert.match(ai.auth.icon, /^data:image\/svg\+xml;base64,/)
+  // 官方客户端安装包里的 256x256 应用图标（圆角方形），不是站点 favicon 的圆形 SVG
+  assert.match(cn.auth.icon, /^data:image\/png;base64,/)
+  assert.match(ai.auth.icon, /^data:image\/png;base64,/)
 
   const cfg = { provider: {} }
   await cn.config(cfg)

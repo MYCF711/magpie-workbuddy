@@ -39,7 +39,7 @@
 |---|---|---|---|---|
 | 1 | 增强模型目录 | 只读 `/v3/config` | 可选合并 scoped 主目录 `/console/enterprises/personal/models`，兼容 console 数组与嵌套 model；scoped 元数据优先，config 补 id 集合与促销表；config 空列表时自动回退 | `tests/multi-provider.test.mjs` 的 scoped 合并测试 |
 | 2 | 国服限时补偿 | 无 | 查询状态 + 可选签到后自动领取；默认关闭，失败不影响签到 | `tests/bonus.test.mjs` + checkin 接线 |
-| 3 | 品牌图标 | 无图标元数据 | 两个 provider 共用 WorkBuddy 官方绿色 Logo（内嵌 SVG data URI） | mount / multi-provider 测试断言为官方 `data:image/svg+xml;base64,` |
+| 3 | 品牌图标 | 无图标元数据 | 两个 provider 共用 WorkBuddy 官方应用图标（客户端安装包 256×256 圆角方形，内嵌 PNG data URI） | mount / multi-provider 测试断言为官方 `data:image/png;base64,` |
 | 4 | 双区架构隔离 | 单文件闭包 | 显式 `SITES` 适配器 + 共享 core；无 host 分支 | `tests/multi-provider.test.mjs` 静态断言 |
 | 5 | 目录双端点 | config 即权威 | scoped 为模型元数据主目录，config 补齐 id 并叠加促销；同 id 不再丢 scoped 的倍率 | scoped 合并测试断言 scoped 的 `rate=0.1`、config-only 的 `a` 保留 |
 | 6 | 测试总面 | 318 条 | 318 条兼容回归 + 173 条 Node 契约 / 单元测试 | `npm test` 与 `npm run test:community` |

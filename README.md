@@ -18,7 +18,7 @@
 
 ## 功能
 
-- **一个包，两个独立供应商**：`WorkBuddyAuthPlugin` 与 `WorkBuddyAIAuthPlugin` 是两个具名导出，magpie 把每个导出当成独立插件实例；两个 `auth`、两组账号、两份模型列表，不会串号。两个 provider 共用 WorkBuddy 官方绿色 Logo（来自官方登录页 `assets/logo.svg`）。
+- **一个包，两个独立供应商**：`WorkBuddyAuthPlugin` 与 `WorkBuddyAIAuthPlugin` 是两个具名导出，magpie 把每个导出当成独立插件实例；两个 `auth`、两组账号、两份模型列表，不会串号。两个 provider 共用 WorkBuddy 官方应用图标（取自官方 Windows 客户端安装包的 256×256 圆角方形图标，内嵌 PNG data URI）。
 - **三种登录**：
   - WorkBuddy 官方登录页：插件打开浏览器，按桌面客户端的方式轮询登录状态，最多 5 分钟，不用粘贴。
   - 桌面客户端登录态：读取本机 WorkBuddy 客户端自己的登录文件，只读不改；5.6 以后加密的版本会明确提示改用浏览器登录。
