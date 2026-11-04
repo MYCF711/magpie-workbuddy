@@ -112,8 +112,10 @@ test("增强目录以 scoped 为主目录、config 补集并供促销", async ()
       { access: "tok", uid: "u1", domain: "www.workbuddy.cn", source: "oauth" },
       { scoped: true },
     )
-    // Scoped is primary: its order first, then config-only ids.
-    assert.deepEqual(list.map((m) => m.id), ["shared", "b", "a"])
+    // config's cli list is the desktop client's own list and goes first, in
+    // its order (that is where `auto` lives); scoped only appends what config
+    // does not name.
+    assert.deepEqual(list.map((m) => m.id), ["a", "shared", "b"])
     assert.equal(list.some((m) => m.id === "img-only"), false, "craft 引用的图片模型也要过滤")
     const shared = list.find((m) => m.id === "shared")
     assert.equal(shared.name, "Shared new")

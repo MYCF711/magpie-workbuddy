@@ -3356,7 +3356,7 @@ function isChatLike(d) {
   if (/^(nes-|completion-|codewise-)/.test(id)) return false
   if (d?.supportsExtra === true) return false
   if (Number(d?.maxOutputTokens) > 0 && Number(d.maxOutputTokens) <= 256) return false
-  if (Array.isArray(d?.tags) && d.tags.includes("text-to-image")) return false
+  if (Array.isArray(d?.tags) && d.tags.some((t) => /-(to|from)-(image|video)$/.test(String(t)))) return false
   return true
 }
 
@@ -3415,15 +3415,20 @@ async function liveModels(site, a, { scoped = false } = {}) {
     ids.push(id)
   }
   if (wide) {
-    for (const page of [wide, base].filter(Boolean)) {
-      for (const agent of page.agents ?? []) {
-        if (agent.name !== "cli" && agent.name !== "craft") continue
-        for (const id of agent.models ?? []) {
-          if (isChatLike(details.get(id) ?? { id })) add(id)
-        }
-      }
-      for (const d of scopedModelsOf(page)) if (isChatLike(d)) add(d.id)
+    // config's cli list first, unfiltered and in its own order: it is exactly
+    // what the desktop client shows, and `auto` is only ever in it. Scoped then
+    // appends the rows config does not have.
+    for (const agent of base?.agents ?? []) {
+      if (agent.name !== "cli") continue
+      for (const id of agent.models ?? []) add(id)
     }
+    for (const agent of wide.agents ?? []) {
+      if (agent.name !== "cli" && agent.name !== "craft") continue
+      for (const id of agent.models ?? []) {
+        if (isChatLike(details.get(id) ?? { id })) add(id)
+      }
+    }
+    for (const d of scopedModelsOf(wide)) if (isChatLike(d)) add(d.id)
   } else {
     for (const agent of base?.agents ?? []) {
       if (agent.name !== "cli") continue
@@ -3927,6 +3932,10 @@ function makePlugin(site) {
         },
         ...(site.ai ? [] : [{
           key: GROWTH_CENTER,
+          // magpie 0.1.2985+ draws a "top" option under the accounts, above the
+          // routing block; older magpie ignores the field and keeps it in the
+          // plugin-options block at the bottom.
+          placement: "top",
           label: "Growth centre on check-in",
           description: `Runs ${site.name}'s growth centre in the background after the daily check-in: claimable tasks, the first Buddy, cat travel, streak make-up cards and redemptions, the lottery, the new-user gift and the activity compensation. Every action is idempotent per Beijing day, so a repeat run only re-reads the list and stops. It runs unless this switch is turned off — never set is treated as on.`,
           labels: { zh: "签到顺带跑成长中心" },
