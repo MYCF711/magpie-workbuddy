@@ -15,7 +15,7 @@ import { homedir } from "node:os"
 import { dirname, isAbsolute, join } from "node:path"
 import { gzipSync } from "node:zlib"
 
-import { SITES } from "../sites.mjs"
+import { SITES, agentOf } from "../sites.mjs"
 import { fetchCompensation, claimCompensation, compensationOf, describeCompensationFailure } from "./bonus.mjs"
 import { GrowthError, createGrowth } from "./growth.mjs"
 
@@ -289,12 +289,11 @@ function sign(site, a, headers) {
 }
 
 // cliAgent is the User-Agent WorkBuddy's desktop CLI sends its API calls
-// (a chat, the product config) with: UserAgentHttpInterceptor's
-// buildUserAgent puts the platform (CLIENT_INFO_PLATFORM "WorkBuddy", at
-// the app's version) first, then the CLI's applicationName at the same
-// version, then CLIENT_INFO_USER_AGENT_EXTENSION, "CLI/<its version>".
+// (a chat, the product config) with. The spelling itself lives on the site
+// table (sites.mjs' agentOf) so that every egress path of this plugin --
+// these chats and api.mjs' generic helper -- sends the same identity.
 function cliAgent(site) {
-  return `WorkBuddy/${site.app} ${site.appName}/${site.app} CLI/${site.cli}`
+  return agentOf(site)
 }
 
 // OPENAI_SDK and NODE are what the CLI's chats go out through: the OpenAI

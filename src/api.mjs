@@ -10,6 +10,7 @@
 //   ③ 每个请求都带超时（AbortSignal.timeout），没有超时的 fetch 会挂死整张卡片
 
 import { BASE } from "./context.mjs"
+import { SITES, agentOf } from "./sites.mjs"
 
 /** 上游给的业务错误。带上 status 与 code，调用方才能分流。 */
 export class ApiError extends Error {
@@ -33,13 +34,15 @@ export const TIMEOUT = { short: 10_000, long: 120_000 }
  *   + organization-code: <org>         有的网关不带这个头直接 500（不是 401）
  *   + 自定义 UA / Origin               有的网关缺 Origin 偶发 403
  */
-export function headersFor(auth = {}) {
+export function headersFor(auth = {}, site = SITES.workbuddy) {
   const h = {
     "content-type": "application/json",
     accept: "application/json",
-    // 通用 helper 的默认 UA；本插件的真实请求头在
-    // src/workbuddy/runtime.mjs 的 sign() / chatHeaders() 中设置。
-    "user-agent": "magpie-workbuddy/0.1.4",
+    // 官方 WorkBuddy 桌面端 CLI 的 UA，与 src/workbuddy/runtime.mjs 的
+    // sign() / chatHeaders() 是**同一套拼法**（sites.mjs 的 agentOf）。
+    // 不要再写本插件自己的名字：上游按 <product>/<version> 认第三方客户端，
+    // 命中就 403；WorkBuddy 自己的接口还会直接回 error 10085。
+    "user-agent": agentOf(site),
   }
   if (auth.token) h.authorization = `Bearer ${auth.token}`
   // 租户头由调用方按厂商追加；WorkBuddy 的企业头见 enterpriseHeaders()。

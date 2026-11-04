@@ -101,3 +101,20 @@ export const SITES = Object.freeze({
     icon: WORKBUDDY_ICON,
   }),
 })
+
+// agentOf is the User-Agent WorkBuddy's own desktop client sends its API
+// calls (a chat, the product config) with: UserAgentHttpInterceptor's
+// buildUserAgent puts the platform (CLIENT_INFO_PLATFORM "WorkBuddy", at the
+// app's version) first, then the CLI's applicationName at the same version,
+// then CLIENT_INFO_USER_AGENT_EXTENSION, "CLI/<its version>".
+//
+// It lives here -- on the site table, not in a request module -- because it
+// is a client fingerprint these two sites differ in, and because every
+// outbound request of this plugin must carry it: a request whose User-Agent
+// is this plugin's own name/version is refused upstream (error 10085), and
+// any <product>/<version> of ours is refused by the inference gateway. One
+// spelling, both egress paths (workbuddy/runtime.mjs's chats and api.mjs's
+// generic helper).
+export function agentOf(site = SITES.workbuddy) {
+  return `WorkBuddy/${site.app} ${site.appName}/${site.app} CLI/${site.cli}`
+}
