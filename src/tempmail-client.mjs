@@ -10,6 +10,10 @@
 // ⚠ 这类地址是一次性的：登录成功后应当把邮箱从结果里拿掉，只保留它注册出来的账号，
 //   不要把临时邮箱当成用户的联系方式写进账号名。
 
+/** 官方网页客户端的 UA —— 打第三方（temp-mail.io）也要显式带，别透传宿主的 magpie/<version>。 */
+const OFFICIAL_WEB_UA =
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+
 const BASE = "https://api.internal.temp-mail.io/api"
 const DOMAIN = "yzcalo.com"
 
@@ -24,7 +28,7 @@ function nameOf() {
 export async function createTempMailbox({ base = BASE, domain = DOMAIN, name = nameOf() } = {}) {
   const res = await fetch(`${base}/v3/email/new`, {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: { "content-type": "application/json", "user-agent": OFFICIAL_WEB_UA },
     body: JSON.stringify({ name, domain }),
     signal: AbortSignal.timeout(20_000),
   })
@@ -57,6 +61,7 @@ export async function waitTempCode(
   const deadline = Date.now() + timeoutMs
   while (Date.now() < deadline) {
     const res = await fetch(`${base}/v3/email/${encodeURIComponent(address)}/messages`, {
+      headers: { "user-agent": OFFICIAL_WEB_UA },
       signal: AbortSignal.timeout(20_000),
     })
     const list = await res.json().catch(() => null)
